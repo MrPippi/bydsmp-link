@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>帳號連結</title>
+<style>
+  :root { --bg: #f6f6f7; --fg: #1d1d1f; --card: #fff; --accent: #5865f2; --muted: #6e6e73; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1d1d1f; --fg: #f5f5f7; --card: #2c2c2e; --muted: #a1a1a6; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, sans-serif; }
+  main { max-width: 560px; margin: 48px auto; padding: 0 16px; }
+  .card { background: var(--card); border-radius: 12px; padding: 24px; }
+  code { display: block; word-break: break-all; padding: 12px; border-radius: 8px; background: var(--bg); font-size: 15px; }
+  button { margin-top: 12px; padding: 10px 20px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font-size: 16px; }
+  p.muted { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main><div class="card" id="card"></div></main>
+<script>
+  // Bydsmp-Links 的 Discord OAuth 跳轉頁。這一頁不發出任何請求：code 只顯示給玩家複製，由玩家貼回遊戲。
+  const params = new URLSearchParams(location.search);
+  const card = document.getElementById('card');
+  const add = (tag, text, cls) => {
+    const el = document.createElement(tag);
+    el.textContent = text;
+    if (cls) el.className = cls;
+    card.appendChild(el);
+    return el;
+  };
+  const code = params.get('code');
+  const state = params.get('state');
+  if (params.get('error') || !code || !state) {
+    add('h2', '沒有拿到授權');
+    add('p', '你可能按了取消。回到遊戲重新點「開啟 Discord」即可。', 'muted');
+  } else {
+    add('h2', '複製這組碼，貼回遊戲');
+    const value = state + '.' + code;
+    add('code', value);
+    const btn = add('button', '複製');
+    btn.onclick = () => navigator.clipboard.writeText(value).then(() => { btn.textContent = '已複製'; });
+    add('p', '這組碼 10 分鐘內有效、只能用一次。不要給別人。', 'muted');
+    history.replaceState(null, '', location.pathname);
+  }
+</script>
+</body>
+</html>
